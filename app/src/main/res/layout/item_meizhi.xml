@@ -21,7 +21,7 @@
     android:id="@+id/meizhi_card"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:visibility="invisible"
+    android:visibility="visible"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginLeft="1dp"
@@ -31,7 +31,7 @@
     android:clickable="true"
     android:orientation="vertical">
 
-    <me.drakeet.meizhi.widget.RatioImageView
+    <com.luo.zp.widget.RatioImageView
         android:id="@+id/iv_meizhi"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
