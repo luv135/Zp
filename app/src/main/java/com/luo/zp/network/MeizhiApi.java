@@ -35,4 +35,15 @@ public interface MeizhiApi {
     @GET("app/marriage/user/getRunloveUserinfo")
     Call<MeizhiDetail> userInfo(@Header("appkey") String marriage,
                                 @Query("uid") long uid);
+
+    //http://120.27.144.185/runlove/app/marriage/picked/notlogin/pickedSpouse?sex=1&faceid=35158cf1f0abb3d1f2e47ee3697ad608&touid=2676958084925440
+    @Headers({
+            "version:1.0.0",
+            "app:android"
+    })
+    @GET("app/marriage/picked/notlogin/pickedSpouse")
+    Call<MeizhiResult> update(@Header("appkey") String marriage,
+                              @Query("sex") int sex,
+                              @Query("faceid")String faceid,
+                              @Query("touid")long uid);
 }

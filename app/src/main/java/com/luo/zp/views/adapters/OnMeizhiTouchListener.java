@@ -1,4 +1,4 @@
-package com.luo.zp.adapters;
+package com.luo.zp.views.adapters;
 
 /**
  * Created by Luo on 2016/1/8.

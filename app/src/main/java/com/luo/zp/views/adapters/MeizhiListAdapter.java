@@ -17,11 +17,11 @@
  * along with Meizhi.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.luo.zp.adapters;
+package com.luo.zp.views.adapters;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,15 +30,16 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.luo.zp.R;
 import com.luo.zp.models.Meizhi;
-import com.luo.zp.widget.RatioImageView;
+import com.luo.zp.views.RatioImageView;
+import com.orhanobut.logger.Logger;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import rx.Observable;
+
 
 /**
  * Created by drakeet on 6/20/15.
@@ -53,21 +54,81 @@ public class MeizhiListAdapter
     private OnMeizhiTouchListener mOnMeizhiTouchListener;
 
 
+
     public MeizhiListAdapter(Context context) {
         mList = new ArrayList<>();
         mContext = context;
     }
 
-    public void add(List<Meizhi> mList){
-        int size = this.mList.size();
+//    public void set(List<Meizhi> mList){
+//        int size = this.mList.size();
+//        int size1 = mList.size();
+//        if(size>size1){
+//            notifyItemRangeChanged(0,size1);
+//
+//        } else {    //size<size1
+//            notifyItemRangeChanged(0,size);
+//            notifyItemRangeInserted(size,size1-size);
+//        }
+//    }
+
+    public void update(String faceid, List<Meizhi> mList) {
+        int oldSize = this.mList.size();
+        int newSize = mList.size();
+        int oldPosition=-1;
+        if(!TextUtils.isEmpty(faceid)) {
+            oldPosition = findFaceidPosition(faceid, this.mList);
+            int newPosition = findFaceidPosition(faceid, mList);
+            if(oldPosition!=-1&&newPosition!=-1) {
+                Meizhi meizhi = mList.get(newPosition);
+                mList.remove(newPosition);
+                mList.add(oldPosition, meizhi);
+            }
+            Logger.d("old: %d, new: %d",oldPosition,newPosition);
+        }
+
+
+        this.mList.clear();
         this.mList.addAll(mList);
-        notifyItemRangeInserted(size,mList.size());
+
+        if (oldSize <= newSize) {
+            if (oldPosition>-1){
+                notifyItemRangeChanged(0, oldPosition);
+                notifyItemRangeChanged(oldPosition+1, oldSize-oldPosition);
+                notifyItemRangeInserted(oldSize, newSize - oldSize);
+            }else {
+                notifyItemRangeChanged(0, oldSize);
+                notifyItemRangeInserted(oldSize, newSize - oldSize);
+            }
+
+        } else {
+            if(oldPosition>-1) {
+                notifyItemRangeChanged(0, oldPosition);
+                notifyItemRangeChanged(oldPosition + 1, newSize-oldPosition);
+                notifyItemRangeRemoved(newSize, oldSize - newSize);
+            } else {
+                notifyItemRangeChanged(0, newSize);
+                notifyItemRangeRemoved(newSize, oldSize - newSize);
+            }
+        }
+    }
+
+    public int findFaceidPosition(String faceid, List<Meizhi> mList) {
+        int position = -1;
+        for (int i = 0; i < mList.size(); i++) {
+            if (faceid.equals(mList.get(i).getFaceid())) {
+                Logger.d("find position is "+i);
+                position = i;
+//                break;
+            }
+        }
+        return position;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int i) {
         View v = LayoutInflater.from(parent.getContext())
-                               .inflate(R.layout.item_meizhi, parent, false);
+                .inflate(R.layout.item_meizhi, parent, false);
         return new ViewHolder(v);
     }
 
@@ -75,17 +136,12 @@ public class MeizhiListAdapter
     @Override
     public void onBindViewHolder(final ViewHolder viewHolder, final int position) {
         Meizhi meizhi = mList.get(position);
-//        int limit = 48;
-//        String text = meizhi.desc.length() > limit ? meizhi.desc.substring(0, limit) +
-//                "..." : meizhi.desc;
         viewHolder.meizhi = meizhi;
-//        viewHolder.titleView.setText(text);
-//        viewHolder.card.setTag(meizhi.desc);
-        viewHolder.titleView.setText(String.format("%d岁  %scm  %s",meizhi.getAge(),meizhi.getState(),meizhi.getUserinfos().getSchool()));
+        viewHolder.titleView.setText(String.format("%d岁  %scm  %s %d", meizhi.getAge(), meizhi.getState(), meizhi.getUserinfos().getSchool(),position));
         Glide.with(mContext)
-             .load(meizhi.getHeadimage())
-             .centerCrop()
-             .into(viewHolder.meizhiView);
+                .load(meizhi.getHeadimage())
+                .centerCrop()
+                .into(viewHolder.meizhiView);
 //             .getSize((width, height) -> {
 //                 if (!viewHolder.card.isShown()) {
 //                     viewHolder.card.setVisibility(View.VISIBLE);
@@ -108,6 +164,14 @@ public class MeizhiListAdapter
 
     public void setOnMeizhiTouchListener(OnMeizhiTouchListener onMeizhiTouchListener) {
         this.mOnMeizhiTouchListener = onMeizhiTouchListener;
+    }
+
+    public Meizhi getItem(int position) {
+        return mList.get(position);
+    }
+
+    public List<Meizhi> getList() {
+        return mList;
     }
 
 

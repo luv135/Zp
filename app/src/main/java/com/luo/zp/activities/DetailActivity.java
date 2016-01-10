@@ -1,16 +1,17 @@
-package com.luo.zp;
+package com.luo.zp.activities;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.luo.zp.R;
 import com.luo.zp.base64.BackAES;
 import com.luo.zp.models.MeizhiDetail;
 import com.luo.zp.network.MeizhiApi;
@@ -27,6 +28,19 @@ public class DetailActivity extends AppCompatActivity {
     private static final String UID = "UID";
     @Bind(R.id.picture)
     ImageView picture;
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
+    @Bind(R.id.label)
+    LinearLayout label;
+    @Bind(R.id.nameTextView)
+    TextView nameTextView;
+    @Bind(R.id.space)
+    View space;
+    @Bind(R.id.navigation)
+    LinearLayout navigation;
+    @Bind(R.id.title)
+    TextView title;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,14 +50,8 @@ public class DetailActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         long uid = getIntent().getLongExtra(UID, 0);
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        title.setText("心动女生");
+        setTitle("");
         loadData(uid);
     }
 
@@ -57,12 +65,18 @@ public class DetailActivity extends AppCompatActivity {
                         @Override
                         public void onResponse(Response<MeizhiDetail> response) {
                             if (response.isSuccess()) {
-                                MeizhiDetail meizhi = response.body();
-                                Logger.d("success :%s",meizhi.getEntity().getHeadimage());
+                                MeizhiDetail result = response.body();
+                                MeizhiDetail.EntityEntity meizhi = result.getEntity();
+                                Logger.d("success :%s", meizhi.getHeadimage());
                                 Glide.with(DetailActivity.this)
-                                        .load(meizhi.getEntity().getHeadimage())
+                                        .load(meizhi.getHeadimage())
+                                        .placeholder(R.drawable.detail)
                                         .centerCrop()
                                         .into(picture);
+                                nameTextView.setText(String.format("%s %d岁 %s %s", meizhi.getName()
+                                        , meizhi.getAge(),
+                                        meizhi.getUserinfos().getHomecity(),
+                                        meizhi.getUserinfos().getCity()));
                             } else {
                                 Logger.d("failure");
                             }
